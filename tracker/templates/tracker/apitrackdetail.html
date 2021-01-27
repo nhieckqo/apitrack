@@ -9,6 +9,12 @@
     {% csrf_token %}
     {{ form|crispy }}
   </form>
-  <a href="{% url 'tracker:curstatsummary_add' %}" class="btn btn-primary">Add Status</a>
+  <form method="get" action="{% url 'tracker:curstatsummary_add' %}">
+    {% csrf_token %}
+    <input type="hidden" name="client_id" value="{{client_id}}">
+    <input type="hidden" name="apii_id" value="{{apii_id}}">
+    <button type="submit" class="btn btn-primary">Add Status</button>
+  </form>
+  
   {% render_table table2 %}
 {% endblock %}

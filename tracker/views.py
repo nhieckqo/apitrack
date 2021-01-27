@@ -1,6 +1,7 @@
 from django_tables2 import SingleTableView, table_factory
 from django.views import generic
 from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404
 
 from . import models
 from . import tables
@@ -66,8 +67,10 @@ class APIIntegrationUpdateView(generic.UpdateView):
         context = super(generic.UpdateView, self).get_context_data(**kwargs)
         client = self.get_object().client
         context['apii_id'] = self.get_object().id
-        context['client_id'] = client
-        print(context)
+        # print("--",self.get_object().id)
+        context['client_id'] = client.id
+        # print (client.id)
+        # print(context)
         context['table2'] = tables.CurrentStatusTable(
                     models.CurrentStatus.objects.filter(client=client))
         return context
@@ -84,12 +87,37 @@ class CurrentStatusCreateView(generic.CreateView):
     fields = ("client", "current_status", "current_status_details")
 
     def get_success_url(self):
-        apii_id = self.get_object().apii_id
+        apii_id = self.request.GET['apii_id']
         return reverse_lazy('tracker:apitracksummary_edit', kwargs={'pk':apii_id})
 
-    def form_valid(self, form):
-        self.object = form.save(commit=False)
-        client_id = self.get_object().client_id
-        self.object.client = client_id
-        self.object.save()
-        return super(ModelFormMixin, self).form_valid(form)
+    # def form_valid(self, form):
+    #     self.object = form.save(commit=False)
+    #     client_id = self.get_object().client_id
+    #     print(">>>>",client_id)
+    #     form.instance.client = client_id
+    #     self.object.client = client_id
+    #     self.object.save()
+    #     return super(CurrentStatusCreateView, self).form_valid(form)
+
+    # def get_initial(self):
+    #     client_id = self.request.GET['client_id']
+    #     # print(">>>", client_id)
+    #     # client = get_object_or_404(models.APIIntegrationSummary, pk=client_id)
+    #     print("$$$$",models.Client.objects.get(id=client_id))
+    #     return {
+    #         "client": models.Client.objects.get(id=client_id),
+    #     }
+
+    def get_form(self):
+        form = super(CurrentStatusCreateView, self).get_form()
+        client_id = self.request.GET['client_id']
+        initial_base = self.get_initial()
+        initial_base['client'] = models.Client.objects.get(id=client_id)
+        form.initial = initial_base
+
+        form.fields['client'].disabled = True
+        return form
+
+
+
+    

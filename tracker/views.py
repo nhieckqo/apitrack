@@ -1,11 +1,10 @@
-from django_tables2 import SingleTableView, table_factory
+from django_tables2 import SingleTableView
 from django.views import generic
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
 
 from . import models
 from . import tables
-from . import forms
 
 
 # Create your views here.
@@ -65,14 +64,12 @@ class APIIntegrationUpdateView(generic.UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(generic.UpdateView, self).get_context_data(**kwargs)
-        client = self.get_object().client
-        context['apii_id'] = self.get_object().id
-        # print("--",self.get_object().id)
-        context['client_id'] = client.id
-        # print (client.id)
-        # print(context)
+
+        self.request.session['apii_id'] = self.get_object().id
+        self.request.session['client_id'] = self.get_object().client.id
+
         context['table2'] = tables.CurrentStatusTable(
-                    models.CurrentStatus.objects.filter(client=client))
+                    models.CurrentStatus.objects.filter(client=self.get_object().client))
         return context
 
 
@@ -85,39 +82,48 @@ class CurrentStatusCreateView(generic.CreateView):
     model = models.CurrentStatus
     template_name = "tracker/curstatdetail.html"
     fields = ("client", "current_status", "current_status_details")
+    
 
     def get_success_url(self):
-        apii_id = self.request.GET['apii_id']
+        apii_id = self.request.session['apii_id']
+        # print(">>>", apii_id)
         return reverse_lazy('tracker:apitracksummary_edit', kwargs={'pk':apii_id})
-
-    # def form_valid(self, form):
-    #     self.object = form.save(commit=False)
-    #     client_id = self.get_object().client_id
-    #     print(">>>>",client_id)
-    #     form.instance.client = client_id
-    #     self.object.client = client_id
-    #     self.object.save()
-    #     return super(CurrentStatusCreateView, self).form_valid(form)
-
-    # def get_initial(self):
-    #     client_id = self.request.GET['client_id']
-    #     # print(">>>", client_id)
-    #     # client = get_object_or_404(models.APIIntegrationSummary, pk=client_id)
-    #     print("$$$$",models.Client.objects.get(id=client_id))
-    #     return {
-    #         "client": models.Client.objects.get(id=client_id),
-    #     }
 
     def get_form(self):
         form = super(CurrentStatusCreateView, self).get_form()
-        client_id = self.request.GET['client_id']
+        # print(">>>0", self.request.POST)
         initial_base = self.get_initial()
+        
+        client_id = self.request.session['client_id']
         initial_base['client'] = models.Client.objects.get(id=client_id)
+       
         form.initial = initial_base
 
         form.fields['client'].disabled = True
         return form
 
 
+class CurrentStatusUpdateView(generic.UpdateView):
+    model = models.CurrentStatus
+    template_name = "tracker/curstatdetail.html"
+    fields = ("client", "current_status", "current_status_details")
 
+    def get_success_url(self):
+        apii_id = self.request.session['apii_id']
+        # print(">>>", apii_id)
+        return reverse_lazy('tracker:apitracksummary_edit', kwargs={'pk':apii_id})
+
+    def get_form(self):
+        form = super(CurrentStatusUpdateView, self).get_form()
+
+        form.fields['client'].disabled = True
+        return form
+
+
+class CurrentStatusDeleteView(generic.DeleteView):
+    model = models.CurrentStatus
     
+    def get_success_url(self):
+        apii_id = self.request.session['apii_id']
+        # print(">>>", apii_id)
+        return reverse_lazy('tracker:apitracksummary_edit', kwargs={'pk':apii_id})

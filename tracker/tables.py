@@ -29,12 +29,23 @@ class APIIntegrationSummaryTable(tables.Table):
 
 
 class CurrentStatusTable(tables.Table):
+    edit = tables.LinkColumn('tracker:curstatsummary_edit', args=[A('pk')],
+                            orderable=False, empty_values=(), verbose_name='')
+    delete = tables.LinkColumn('tracker:curstatsummary_del', args=[A('pk')],
+                            orderable=False, empty_values=(), verbose_name='')
 
     class Meta:
         model = models.CurrentStatus
+        attrs = {'class': 'table table-sm'}
         template_name = "django_tables2/bootstrap.html"
         fields = ("client", "entry_timestamp",
                   "current_status", "current_status_details")
+    
+    def render_edit(self):
+        return 'Edit'
+
+    def render_delete(self):
+        return 'Delete'
 
 
 class EnvironmentCredentialTable(tables.Table):

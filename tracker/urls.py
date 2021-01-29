@@ -19,4 +19,8 @@ urlpatterns = [
             name="apitracksummary_del"),
     path("curstatsummary/add", views.CurrentStatusCreateView.as_view(),
             name='curstatsummary_add'),
+    path("curstatsummary/edit/<pk>", views.CurrentStatusUpdateView.as_view(),
+            name="curstatsummary_edit"),
+    path("curstatsummary/delete/<pk>", views.CurrentStatusDeleteView.as_view(),
+            name="curstatsummary_del"),
 ]

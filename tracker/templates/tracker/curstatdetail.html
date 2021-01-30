@@ -4,6 +4,7 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
+  <a href="{{ back_to_curstat }}">Back</a>
   <form method="post">
     <button type="submit" class="btn btn-primary">Save</button>
     {% csrf_token %}

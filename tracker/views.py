@@ -13,6 +13,11 @@ class APIIntegrationSummaryView(SingleTableView):
     table_class = tables.APIIntegrationSummaryTable
     template_name = "tracker/apitracksummary.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        self.request.session['back_to_apii'] = self.request.path
+        
+        return context
 
 class CurrentStatusSummaryView(SingleTableView):
     model = models.CurrentStatus
@@ -44,8 +49,10 @@ class APIIntegrationCreateView(generic.CreateView):
     success_url = reverse_lazy('tracker:apitracksummary')
 
     def get_context_data(self, **kwargs):
-        context = super(generic.CreateView, self).get_context_data(**kwargs)
-
+        context = super().get_context_data(**kwargs)
+        context['back_to_apii'] = self.request.session['back_to_apii']
+        
+        self.request.session['back_to_curstat'] = self.request.path
         context['table2'] = tables.CurrentStatusTable(
                     models.CurrentStatus.objects.filter(client=None))
         return context
@@ -63,11 +70,13 @@ class APIIntegrationUpdateView(generic.UpdateView):
     success_url = reverse_lazy('tracker:apitracksummary')
 
     def get_context_data(self, **kwargs):
-        context = super(generic.UpdateView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         self.request.session['apii_id'] = self.get_object().id
         self.request.session['client_id'] = self.get_object().client.id
+        self.request.session['back_to_curstat'] = self.request.path
 
+        context['back_to_apii'] = self.request.session['back_to_apii']
         context['table2'] = tables.CurrentStatusTable(
                     models.CurrentStatus.objects.filter(client=self.get_object().client))
         return context
@@ -90,7 +99,7 @@ class CurrentStatusCreateView(generic.CreateView):
         return reverse_lazy('tracker:apitracksummary_edit', kwargs={'pk':apii_id})
 
     def get_form(self):
-        form = super(CurrentStatusCreateView, self).get_form()
+        form = super().get_form()
         # print(">>>0", self.request.POST)
         initial_base = self.get_initial()
         
@@ -102,6 +111,11 @@ class CurrentStatusCreateView(generic.CreateView):
         form.fields['client'].disabled = True
         return form
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['back_to_curstat'] = self.request.session['back_to_curstat']
+
+        return context
 
 class CurrentStatusUpdateView(generic.UpdateView):
     model = models.CurrentStatus
@@ -114,11 +128,16 @@ class CurrentStatusUpdateView(generic.UpdateView):
         return reverse_lazy('tracker:apitracksummary_edit', kwargs={'pk':apii_id})
 
     def get_form(self):
-        form = super(CurrentStatusUpdateView, self).get_form()
+        form = super().get_form()
 
         form.fields['client'].disabled = True
         return form
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['back_to_curstat'] = self.request.session['back_to_curstat']
+
+        return context
 
 class CurrentStatusDeleteView(generic.DeleteView):
     model = models.CurrentStatus

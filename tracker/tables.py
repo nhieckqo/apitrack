@@ -7,9 +7,9 @@ class APIIntegrationSummaryTable(tables.Table):
     # edit = tables.LinkColumn('main:edit_item', args=[A('pk')], attrs={
     #     'a': {'class': 'btn'}
     # })
-    edit = tables.LinkColumn('tracker:apitracksummary_edit', args=[A('pk')],
+    edit = tables.LinkColumn('tracker:apitrack_edit', args=[A('pk')],
                             orderable=False, empty_values=(), verbose_name='')
-    delete = tables.LinkColumn('tracker:apitracksummary_del', args=[A('pk')],
+    delete = tables.LinkColumn('tracker:apitrack_del', args=[A('pk')],
                             orderable=False, empty_values=(), verbose_name='')
     class Meta:
         model = models.APIIntegrationSummary
@@ -29,9 +29,9 @@ class APIIntegrationSummaryTable(tables.Table):
 
 
 class CurrentStatusTable(tables.Table):
-    edit = tables.LinkColumn('tracker:curstatsummary_edit', args=[A('pk')],
+    edit = tables.LinkColumn('tracker:curstat_edit', args=[A('pk')],
                             orderable=False, empty_values=(), verbose_name='')
-    delete = tables.LinkColumn('tracker:curstatsummary_del', args=[A('pk')],
+    delete = tables.LinkColumn('tracker:curstat_del', args=[A('pk')],
                             orderable=False, empty_values=(), verbose_name='')
 
     class Meta:
@@ -49,13 +49,23 @@ class CurrentStatusTable(tables.Table):
 
 
 class EnvironmentCredentialTable(tables.Table):
+    edit = tables.LinkColumn('tracker:envcred_edit', args=[A('pk')],
+                            orderable=False, empty_values=(), verbose_name='')
+    delete = tables.LinkColumn('tracker:envcred_del', args=[A('pk')],
+                            orderable=False, empty_values=(), verbose_name='')
 
     class Meta:
         model = models.EnvironmentCredential
+        attrs = {'class': 'table table-sm'}
         template_name = "django_tables2/bootstrap.html"
         fields = ("client", "key", "interfacelinks", "is_live",
                   "eccompanyid", "customerid")
 
+    def render_edit(self):
+        return 'Edit'
+
+    def render_delete(self):
+        return 'Delete'
 
 class ClientTable(tables.Table):
 

@@ -11,11 +11,17 @@
     {{ form|crispy }}
   </form>
 
-  <form method="post" action="{% url 'tracker:curstatsummary_add' %}">
+  <form method="post" action="{% url 'tracker:curstat_add' %}">
     {% csrf_token %}
-    <input type="hidden" name="back" value="{{ request.path }}">
+
     <button type="submit" class="btn btn-primary">Add Status</button>
   </form>
-  
-  {% render_table table2 %}
+  {% render_table table_curstatsummary %}
+
+  <form method="post" action="{% url 'tracker:envcred_add' %}">
+    {% csrf_token %}
+
+    <button type="submit" class="btn btn-primary">Add Env. Credential</button>
+  </form>
+  {% render_table table_envcredsummary %}
 {% endblock %}

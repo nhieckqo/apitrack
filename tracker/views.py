@@ -50,11 +50,14 @@ class APIIntegrationCreateView(generic.CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['back_to_apii'] = self.request.session['back_to_apii']
-        
+        # context['back_to_apii'] = self.request.session['back_to_apii']
+
         self.request.session['back_to_curstat'] = self.request.path
-        context['table2'] = tables.CurrentStatusTable(
+        self.request.session['back_to_envcred'] = self.request.path
+        context['table_curstatsummary'] = tables.CurrentStatusTable(
                     models.CurrentStatus.objects.filter(client=None))
+        context['table_envcredsummary'] = tables.EnvironmentCredentialTable(
+                    models.EnvironmentCredential.objects.filter(client=None))
         return context
 
 
@@ -75,10 +78,13 @@ class APIIntegrationUpdateView(generic.UpdateView):
         self.request.session['apii_id'] = self.get_object().id
         self.request.session['client_id'] = self.get_object().client.id
         self.request.session['back_to_curstat'] = self.request.path
+        self.request.session['back_to_envcred'] = self.request.path
 
         context['back_to_apii'] = self.request.session['back_to_apii']
-        context['table2'] = tables.CurrentStatusTable(
+        context['table_curstatsummary'] = tables.CurrentStatusTable(
                     models.CurrentStatus.objects.filter(client=self.get_object().client))
+        context['table_envcredsummary'] = tables.EnvironmentCredentialTable(
+                    models.EnvironmentCredential.objects.filter(client=self.get_object().client))
         return context
 
 
@@ -96,7 +102,7 @@ class CurrentStatusCreateView(generic.CreateView):
     def get_success_url(self):
         apii_id = self.request.session['apii_id']
         # print(">>>", apii_id)
-        return reverse_lazy('tracker:apitracksummary_edit', kwargs={'pk':apii_id})
+        return reverse_lazy('tracker:apitrack_edit', kwargs={'pk':apii_id})
 
     def get_form(self):
         form = super().get_form()
@@ -117,6 +123,7 @@ class CurrentStatusCreateView(generic.CreateView):
 
         return context
 
+
 class CurrentStatusUpdateView(generic.UpdateView):
     model = models.CurrentStatus
     template_name = "tracker/curstatdetail.html"
@@ -125,7 +132,7 @@ class CurrentStatusUpdateView(generic.UpdateView):
     def get_success_url(self):
         apii_id = self.request.session['apii_id']
         # print(">>>", apii_id)
-        return reverse_lazy('tracker:apitracksummary_edit', kwargs={'pk':apii_id})
+        return reverse_lazy('tracker:apitrack_edit', kwargs={'pk':apii_id})
 
     def get_form(self):
         form = super().get_form()
@@ -139,10 +146,74 @@ class CurrentStatusUpdateView(generic.UpdateView):
 
         return context
 
+
 class CurrentStatusDeleteView(generic.DeleteView):
     model = models.CurrentStatus
     
     def get_success_url(self):
         apii_id = self.request.session['apii_id']
         # print(">>>", apii_id)
-        return reverse_lazy('tracker:apitracksummary_edit', kwargs={'pk':apii_id})
+        return reverse_lazy('tracker:apitrack_edit', kwargs={'pk':apii_id})
+
+
+class EnvironmentCredentialCreateView(generic.CreateView):
+    model = models.EnvironmentCredential
+    template_name = "tracker/envcreddetail.html"
+    fields = ("client", "key", "interfacelinks", "is_live", "eccompanyid", "customerid")
+    
+
+    def get_success_url(self):
+        apii_id = self.request.session['apii_id']
+        # print(">>>", apii_id)
+        return reverse_lazy('tracker:apitrack_edit', kwargs={'pk':apii_id})
+
+    def get_form(self):
+        form = super().get_form()
+        # print(">>>0", self.request.POST)
+        initial_base = self.get_initial()
+        
+        client_id = self.request.session['client_id']
+        initial_base['client'] = models.Client.objects.get(id=client_id)
+       
+        form.initial = initial_base
+
+        form.fields['client'].disabled = True
+        return form
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['back_to_envcred'] = self.request.session['back_to_envcred']
+
+        return context
+
+
+class EnvironmentCredentialUpdateView(generic.UpdateView):
+    model = models.EnvironmentCredential
+    template_name = "tracker/envcreddetail.html"
+    fields = ("client", "key", "interfacelinks", "is_live", "eccompanyid", "customerid")
+
+    def get_success_url(self):
+        apii_id = self.request.session['apii_id']
+        # print(">>>", apii_id)
+        return reverse_lazy('tracker:apitrack_edit', kwargs={'pk':apii_id})
+
+    def get_form(self):
+        form = super().get_form()
+
+        form.fields['client'].disabled = True
+        return form
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['back_to_envcred'] = self.request.session['back_to_envcred']
+
+        return context
+
+
+class EnvironmentCredentialDeleteView(generic.DeleteView):
+    model = models.EnvironmentCredential
+    
+    def get_success_url(self):
+        apii_id = self.request.session['apii_id']
+        # print(">>>", apii_id)
+        return reverse_lazy('tracker:apitrack_edit', kwargs={'pk':apii_id})
